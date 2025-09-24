@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR & NFCリーダー</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            color: #333;
+        }
+        .button-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        #readButton { background-color: #007bff; }
+        #readButton:hover { background-color: #0056b3; }
+        #cancelButton { background-color: #ffc107; color: #333; }
+        #cancelButton:hover { background-color: #d39e00; }
+        #saveButton { background-color: #28a745; }
+        #saveButton:hover { background-color: #1e7e34; }
+        #status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #e9ecef;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #495057;
+        }
+        #qr-reader {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            word-break: break-all;
+        }
+        thead {
+            background-color: #007bff;
+            color: white;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
+</head>
+<body>
+
+    <h1>QR & NFC スキャンツール</h1>
+
+    <div class="button-container">
+        <button id="readButton">読取</button>
+        <button id="cancelButton">取消</button>
+        <button id="saveButton">保存</button>
+    </div>
+
+    <div id="status">ボタンを押してスキャンを開始してください。</div>
+
+    <div id="qr-reader" style="display: none;"></div>
+
+    <div id="results">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>QRコード内容</th>
+                    <th>NFCタグID</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // DOM要素の取得
+        const readButton = document.getElementById('readButton');
+        const cancelButton = document.getElementById('cancelButton');
+        const saveButton = document.getElementById('saveButton');
+        const statusDiv = document.getElementById('status');
+        const qrReaderDiv = document.getElementById('qr-reader');
+        const dataTableBody = document.querySelector('#dataTable tbody');
+
+        // スキャンデータを保存する配列
+        let scannedData = [];
+        let currentQrData = null;
+        let html5QrCode;
+
+        // --- イベントリスナーの設定 ---
+
+        // [読取]ボタンの処理
+        readButton.addEventListener('click', startQrScan);
+
+        // [取消]ボタンの処理
+        cancelButton.addEventListener('click', () => {
+            if (scannedData.length > 0) {
+                scannedData.pop(); // 配列の最後の要素を削除
+                updateDataTable();
+                statusDiv.textContent = "最後のデータを削除しました。";
+            } else {
+                statusDiv.textContent = "削除するデータがありません。";
+            }
+        });
+
+        // [保存]ボタンの処理
+        saveButton.addEventListener('click', () => {
+            if (scannedData.length === 0) {
+                statusDiv.textContent = "保存するデータがありません。";
+                return;
+            }
+
+            // CSVデータの生成
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "QRコード内容,NFCタグID\n"; // ヘッダー行
+
+            scannedData.forEach(item => {
+                const qr = `"${item.qr.replace(/"/g, '""')}"`; // ダブルクォートで囲み、中のダブルクォートはエスケープ
+                const nfc = `"${item.nfc}"`;
+                csvContent += `${qr},${nfc}\n`;
+            });
+
+            // CSVファイルのダウンロード
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            link.setAttribute("download", `scan_data_${timestamp}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            statusDiv.textContent = "CSVファイルを保存しました。";
+        });
+
+        // --- 主要な関数 ---
+
+        // QRコードスキャンを開始する関数 (エラー表示機能付き)
+        function startQrScan() {
+            // Web NFCが利用可能かチェック (Android Chromeのみ)
+            if (!("NDEFReader" in window)) {
+                 statusDiv.textContent = "このブラウザはWeb NFCに対応していません。(Android版Chromeをお試し下さい)";
+                 // NFCが使えなくてもQRは使えるようにする場合は、このreturnをコメントアウト
+                 // return; // NFCが必須でなければ一旦この行は無効化してQRスキャンを試します
+            }
+
+            // カメラの機能が利用可能かチェック
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                statusDiv.textContent = "エラー: このブラウザではカメラ機能がサポートされていません。";
+                return;
+            }
+
+            html5QrCode = new Html5Qrcode("qr-reader");
+            qrReaderDiv.style.display = 'block';
+            statusDiv.textContent = "カメラを起動しています...";
+
+            try {
+                html5QrCode.start(
+                    { facingMode: "environment" }, // 背面カメラを使用
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 }
+                    },
+                    onScanSuccess, // 成功時のコールバック
+                    onScanFailure  // 失敗時のコールバック（エラー処理）
+                ).catch(err => {
+                    // start()メソッドが失敗した場合のエラーを捕捉
+                    console.error("カメラの起動に失敗しました:", err);
+                    statusDiv.textContent = `カメラ起動エラー: ${err}`;
+                });
+            } catch (err) {
+                // new Html5Qrcode() やその他の同期的なエラーを捕捉
+                console.error("予期せぬエラー:", err);
+                statusDiv.textContent = `予期せぬエラー: ${err}`;
+            }
+        }
+
+        // QRコード読み取り成功時の処理
+        function onScanSuccess(decodedText, decodedResult) {
+            // スキャンを停止
+            html5QrCode.stop().then(() => {
+                qrReaderDiv.style.display = 'none';
+                currentQrData = decodedText;
+                statusDiv.textContent = `QR読取成功: ${decodedText} | NFCタグをタッチしてください...`;
+                // 続けてNFCの読み取りを開始
+                readNfcTag();
+            }).catch(err => {
+                console.error("QRスキャナーの停止に失敗しました。", err);
+            });
+        }
+        
+        // QRコード読み取り失敗時の処理（通常は無視してOK）
+        function onScanFailure(error) {
+            // このコールバックはスキャンが成功するまで呼ばれ続けます
+        }
+
+        // NFCタグを読み取る関数
+        async function readNfcTag() {
+            try {
+                const ndef = new NDEFReader();
+                await ndef.scan(); // スキャン開始
+
+                ndef.addEventListener("reading", ({ message, serialNumber }) => {
+                    const nfcId = serialNumber;
+                    statusDiv.textContent = `NFC読取成功: ${nfcId}`;
+
+                    // QRデータとNFCデータをペアで保存
+                    if (currentQrData) {
+                        scannedData.push({ qr: currentQrData, nfc: nfcId });
+                        currentQrData = null; // 一時データをリセット
+                        updateDataTable();
+                        statusDiv.textContent = "読取完了！次のデータをスキャンできます。";
+                    }
+                });
+
+                 ndef.addEventListener("readingerror", () => {
+                    statusDiv.textContent = "NFCタグの読み取りに失敗しました。";
+                });
+
+            } catch (error) {
+                statusDiv.textContent = `NFCスキャンエラー: ${error}`;
+            }
+        }
+        
+        // データテーブルを更新する関数
+        function updateDataTable() {
+            // テーブルの内容を一旦クリア
+            dataTableBody.innerHTML = '';
+            // 配列のデータからテーブルの行を生成
+            scannedData.forEach((data, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${data.qr}</td>
+                    <td>${data.nfc}</td>
+                `;
+                dataTableBody.appendChild(row);
+            });
+        }
+    </script>
+
+</body>
+</html>
