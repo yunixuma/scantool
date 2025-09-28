@@ -28,11 +28,11 @@ def scan_qr(cap):
 
         # Decode QR codes
         decoded_objects = decode(frame, symbols=[ZBarSymbol.QRCODE])
-        
+
         for obj in decoded_objects:
             # Get the QR code data
             decoded_data = obj.data.decode('utf-8')
-            
+
             # Draw a bounding box around the QR code
             points = obj.polygon
             if len(points) == 4:
