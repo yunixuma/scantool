@@ -66,6 +66,11 @@ def init_capture(dev_idx=0):
         return None
     return cap
 
+def destroy_windows(cap = None):
+    if cap:
+        cap.release()
+    cv2.destroyAllWindows()
+
 def wrapper(args):
     ret = None
     if args and len(args) > 1:
@@ -77,8 +82,7 @@ def wrapper(args):
         cap = init_capture(dev_idx)
         ret = scan_qr(cap)
         # When everything is done, release the capture and destroy windows
-        cap.release()
-        cv2.destroyAllWindows()
+        destroy_windows(cap)
         print("\n👋 Webcam closed. Exiting.")
     except Exception as e:
         print(my.S_ERROR + str(e))
