@@ -20,12 +20,12 @@ def scan_qr_nfc(cap, clf, key=None):
         name = qr_data
     print(f"Name: {name}")
     try:
-        uid = nfc_scan.read_id(clf)
+        idm = nfc_scan.read_id(clf)
     except Exception as e:
         my.perror(e)
-        uid = None
-    print(f"UID : {uid}")
-    return { "name": name, "uid": uid }
+        idm = None
+    print(f"IDm : {idm}")
+    return { "name": name, "idm": idm }
 
 def wrapper(args):
     ret = []

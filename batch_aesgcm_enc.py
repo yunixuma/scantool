@@ -9,6 +9,7 @@ def batch_aesgcm_enc(lst, key):
         nonce, ciphertext = myenclib.aesgcm_enc(key, lst[i][col_name].encode('utf-8'))
         encoded_data = myenclib.aesgcm_enc_b64(nonce, ciphertext)
         lst[i]['encdata'] = encoded_data
+        print(lst[i])
     return lst
 
 def wrapper(args):

@@ -34,7 +34,7 @@ def read_id(clf):
                 continue
             print(f"{key} detected")
             if tag.type == 'Type3Tag':
-                return tag.idm.hex().upper()
+                return tag.idm .hex().upper()
             else:
                 uid = tag.identifier.hex().upper()
                 if uid in uids:
@@ -46,8 +46,8 @@ def read_id(clf):
 def wrapper(args):
     try:
         with nfc.ContactlessFrontend('usb') as clf:
-            uid = read_id(clf)
-            return uid
+            idm = read_id(clf)
+            return idm
     except IOError:
         print(my.S_ERROR + "Could not connect to RFID reader.")
         print(my.S_ERROR + "Please check the driver installation and device connection.")

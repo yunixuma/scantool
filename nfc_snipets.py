@@ -73,7 +73,7 @@ def on_connect(tag, clf):
     return True
 
     if isinstance(tag, nfc.tag.Type3Tag):
-        print(f"- IDm        : {tag.idm.hex().upper()}")
+        print(f"- IDm        : {tag.idm .hex().upper()}")
         print(f"- System Code: {tag.system_code.hex().upper()}")
         print(f"- Service Code List: {[code.hex().upper() for code in tag.service_codes]}")
         for service_code in tag.service_codes:

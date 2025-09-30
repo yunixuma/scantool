@@ -4,6 +4,7 @@ import numpy as np
 from pyzbar.pyzbar import decode, ZBarSymbol
 import time
 import my_common as my
+import cam_common
 
 RES_WIDTH = 1280
 RES_HEIGHT = 720
@@ -53,24 +54,6 @@ def scan_qr(cap):
             break
     return ret
 
-def init_capture(dev_idx=0):
-    try:
-        cap = cv2.VideoCapture(dev_idx, cv2.CAP_DSHOW)
-        if not cap.isOpened():
-            print(my.S_ERROR + f"Could not open capture device {dev_idx}.")
-            return None
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, RES_WIDTH)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, RES_HEIGHT)
-    except Exception as e:
-        print(my.S_ERROR + str(e))
-        return None
-    return cap
-
-def destroy_windows(cap = None):
-    if cap:
-        cap.release()
-    cv2.destroyAllWindows()
-
 def wrapper(args):
     ret = None
     if args and len(args) > 1:
@@ -79,10 +62,10 @@ def wrapper(args):
         dev_idx = 0
     try:
         # Initialize the webcam. 0 is usually the default built-in camera.
-        cap = init_capture(dev_idx)
+        cap = cam_common.init_capture(dev_idx)
         ret = scan_qr(cap)
         # When everything is done, release the capture and destroy windows
-        destroy_windows(cap)
+        cam_common.destroy_windows(cap)
         print("\n👋 Webcam closed. Exiting.")
     except Exception as e:
         print(my.S_ERROR + str(e))

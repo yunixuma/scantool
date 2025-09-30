@@ -42,7 +42,7 @@ CONNECT_TIMEOUT = 10
 SENSE_INTERVAL = 0.1
 SENSE_TIMEOUT = 0.5
 
-def get_mobile_suica_idm(clf):
+def get_mobile_suica_idm (clf):
     # 1. Create a specific polling command for Suica (System Code 0x0003)
     felica_target = RemoteTarget('212F', sensf_req=SENSF_REQ_FELICA)
 
@@ -60,7 +60,7 @@ def get_mobile_suica_idm(clf):
         # 4. Check the tag's '.type' attribute as a string.
         #    This is the most reliable way to identify the tag.
         if tag.type == 'Type3Tag':
-            return tag.idm.hex().upper()
+            return tag.idm .hex().upper()
         else:
             # The target responded to a FeliCa poll but isn't a Type3Tag.
             # This is unlikely but handled just in case.

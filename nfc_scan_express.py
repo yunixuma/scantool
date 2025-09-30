@@ -2,7 +2,7 @@ import nfc
 from nfc.clf import RemoteTarget
 import time
 
-def get_iphone_suica_idm(clf):
+def get_iphone_suica_idm (clf):
     """
     Polls for an iPhone's Suica and returns its IDm.
     """
@@ -25,7 +25,7 @@ def get_iphone_suica_idm(clf):
         # 4. Check the tag's '.type' attribute as a string.
         #    This is the most reliable way to identify the tag.
         if tag.type == 'Type3Tag':
-            return tag.idm.hex().upper()
+            return tag.idm .hex().upper()
         else:
             # The target responded to a FeliCa poll but isn't a Type3Tag.
             # This is unlikely but handled just in case.
@@ -45,11 +45,11 @@ if __name__ == "__main__":
             print("-" * 30)
 
             while True:
-                idm = get_iphone_suica_idm(clf)
+                idm = get_iphone_suica_idm (clf)
 
-                if idm:
+                if idm :
                     print(f"  ✅ Success! iPhone Suica IDm found:")
-                    print(f"     IDm: {idm}")
+                    print(f"     IDm: {idm }")
                     print("-" * 30)
                     # Wait 3 seconds to avoid re-reading instantly
                     time.sleep(3)
