@@ -21,7 +21,7 @@ def wrapper(args):
     if args and len(args) > 1:
         lst = my.load_csv(args[1])
     else:
-        lst = my.load_csv("names.txt")
+        lst = my.load_csv("plain.txt")
     return batch_aesgcm_enc(lst, key)
 
 if __name__ == "__main__":
