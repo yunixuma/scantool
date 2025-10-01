@@ -25,16 +25,18 @@ def sense_target(clf, targets):
 
 def read_id(clf):
     uids = []
+    keys = list(nfcu.TARGET_CODES.keys())
+    print("Put your NFC card/tag near the reader.")
     while True:
-        keys = list(nfcu.TARGET_CODES.keys())
         for key in keys:
             print("Scanning for {}".format(key))
             tag = sense_target(clf, nfcu.TARGET_CODES[key])
-            if tag is None:
+            if tag is None:                
+                print(my.CURSOR["UP"] + my.CURSOR["CLEAR_EOL"], end='', flush=True)
                 continue
             print(f"{key} detected")
             if tag.type == 'Type3Tag':
-                return tag.idm .hex().upper()
+                return tag.idm.hex().upper()
             else:
                 uid = tag.identifier.hex().upper()
                 if uid in uids:

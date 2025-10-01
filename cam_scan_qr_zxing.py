@@ -51,10 +51,21 @@ def decoder_thread():
             
     print("👋 Decoder thread finished.")
 
-def main_thread(cap):
+# def main_thread(cap):
+def scan_qr(cap):
     """Main thread for capturing frames and displaying them"""
-    global qr_result
-    
+    global qr_result, frame_queue, stop_event
+
+    # Reset global state variables before starting a new scan
+    qr_result = None
+    stop_event.clear()
+    # Clear the queue in case there's a leftover frame
+    while not frame_queue.empty():
+        try:
+            frame_queue.get_nowait()
+        except queue.Empty:
+            break
+
     # Starting the decoder thread
     dec_thread = threading.Thread(target=decoder_thread, daemon=True)
     dec_thread.start()
@@ -74,7 +85,7 @@ def main_thread(cap):
             frame_queue.put(frame)
             
         # Display the frame
-        cv2.imshow('QR Code Scanner', frame)
+        # cv2.imshow('QR Code Scanner', frame)
 
         if cv2.waitKey(1) & 0xFF == ord(CHR_ABORT):
             stop_event.set()
@@ -92,23 +103,23 @@ def main_thread(cap):
         print("="*30)
         
         # Display the bounding box on the last frame
-        final_frame = cv2.imread("temp_frame.jpg") # A bit of a hack to get the last good frame
-        if final_frame is not None:
-            pos = qr_result.position
-            pts = np.array([[pos.top_left.x, pos.top_left.y], 
-                            [pos.top_right.x, pos.top_right.y], 
-                            [pos.bottom_right.x, pos.bottom_right.y], 
-                            [pos.bottom_left.x, pos.bottom_left.y]], dtype=np.int32)
-            cv2.polylines(final_frame, [pts], True, BOUDING_BOX_COLOR, 3)
-            cv2.imshow('QR Code Scanner', final_frame)
-            cv2.waitKey(0) # Keep window open until a key is pressed
+        # final_frame = cv2.imread("temp_frame.jpg") # A bit of a hack to get the last good frame
+        # if final_frame is not None:
+        #     pos = qr_result.position
+        #     pts = np.array([[pos.top_left.x, pos.top_left.y], 
+        #                     [pos.top_right.x, pos.top_right.y], 
+        #                     [pos.bottom_right.x, pos.bottom_right.y], 
+        #                     [pos.bottom_left.x, pos.bottom_left.y]], dtype=np.int32)
+        #     cv2.polylines(final_frame, [pts], True, BOUDING_BOX_COLOR, 3)
+        #     cv2.imshow('QR Code Scanner', final_frame)
+        #     cv2.waitKey(0) # Keep window open until a key is pressed
 
     else:
         print("\nQR Code not found or scan was aborted.")
 
     # A final cleanup for the temp file
-    if os.path.exists("temp_frame.jpg"):
-        os.remove("temp_frame.jpg")
+    # if os.path.exists("temp_frame.jpg"):
+    #     os.remove("temp_frame.jpg")
     return qr_result.text if qr_result else None
 
 # A little hack to display the final result on the correct frame
@@ -126,7 +137,7 @@ def capture_and_display(cap, dec_thread):
         cv2.imshow('QR Code Scanner', frame)
         
         # Save the last frame for final display
-        cv2.imwrite("temp_frame.jpg", frame)
+        # cv2.imwrite("temp_frame.jpg", frame)
 
         if cv2.waitKey(1) & 0xFF == ord(CHR_ABORT):
             stop_event.set()
@@ -159,7 +170,7 @@ def wrapper(args):
     try:
         # Initialize the webcam. 0 is usually the default built-in camera.
         cap = init_capture(dev_idx)
-        ret = main_thread(cap)
+        ret = scan_qr(cap)
         # When everything is done, release the capture and destroy windows
         destroy_windows(cap)
         print("\n👋 Webcam closed. Exiting.")

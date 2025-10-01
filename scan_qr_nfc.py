@@ -4,7 +4,8 @@ import my_common as my
 import cv2
 import nfc
 import nfc_scan
-import cam_scan_qr
+import cam_common
+import cam_scan_qr_zxing as cam_scan_qr
 import myenclib
 
 def scan_qr_nfc(cap, clf, key=None):
@@ -39,9 +40,9 @@ def wrapper(args):
         dev_idx = 0
     try:
         clf = nfc.ContactlessFrontend('usb')
-        cap = cam_scan_qr.init_capture(dev_idx=0)
+        cap = cam_common.init_capture(dev_idx=0)
         while True:
-            entry = scan_pair(cap, clf, key)
+            entry = scan_qr_nfc(cap, clf, key)
             ret.append(entry)
         clf.close()
         cam_scan_qr.destroy_windows(cap)
