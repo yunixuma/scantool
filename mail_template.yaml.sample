@@ -1,0 +1,29 @@
+from: "your_address@example.com
+bcc: "bcc@example.com"
+subject: ""
+
+body: |
+  <html>
+    <head>
+      <style>
+        body { font-family: sans-serif; }
+        .content { padding: 10px; border: 1px solid #ccc; }
+        .highlight { color: #0056b3; }
+      </style>
+    </head>
+    <body>
+      <p>Dear {Name}</p>
+      
+      <p></p>
+      
+      <div class="content">
+        <strong>Your ID:</strong> <span class="highlight">{ID}</span><br>
+        <strong>Your desert:</strong> {info1} {info2}<br>
+      </div>
+      
+      <p><strong>Please show this code:</strong></p>
+      <img src="cid:{image_cid}" alt="ID">
+      
+      <p>--<br>Issuer</p>
+    </body>
+  </html>

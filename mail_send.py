@@ -49,10 +49,14 @@ def build_message(template, row):
     # 2. Merge body with placeholders
     body = template.get('body', '')
     # .get(col, '') to avoid KeyError if column missing
-    body = body.replace('{Name}', row.get('Name', ''))
-    body = body.replace('{ID}', row.get('ID', ''))
-    body = body.replace('{info1}', row.get('info1', ''))
-    body = body.replace('{info2}', row.get('info2', ''))
+    for column_name, value in row.items():
+        # 'From' and 'image' are not placeholders to replace
+        if column_name.lower() in ['from', 'image']:
+            continue            
+        # Construct the placeholder
+        placeholder = f"{{{column_name}}}"
+        # Replace all occurrences of the placeholder in the body
+        body = body.replace(placeholder, str(value or ''))
 
     # 3. Determine if HTML email and handle embedded image if present
     image_b64 = row.get('image', '')
