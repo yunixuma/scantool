@@ -1,6 +1,6 @@
-from: "your_address@example.com
+from: "your_address@example.com"
 bcc: "bcc@example.com"
-subject: ""
+subject: "TEST: Merge E-mail"
 
 body: |
   <html>
