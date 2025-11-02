@@ -18,7 +18,7 @@ body: |
       
       <div class="content">
         <strong>Your ID:</strong> <span class="highlight">{ID}</span><br>
-        <strong>Your desert:</strong> {info1} {info2}<br>
+        <strong>Your dessert:</strong> {info1} {info2}<br>
       </div>
       
       <p><strong>Please show this code:</strong></p>

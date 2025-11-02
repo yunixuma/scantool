@@ -7,10 +7,10 @@ import dm_gen
 
 def wrapper(args):
     if args and len(args) > 2 and len(args[2]) >= 16:
-        key = myenclib.b64_dec(args[2])
+        key = myenclib.b64_dec(args[2], True)
     else:
         key = myenclib.aesgcmsiv_gen_key()
-    print(f"Secret Key (Base64): {myenclib.b64_enc(key)}")
+    print(f"Secret Key (Base64): {myenclib.b64_enc(key, True)}")
     if args and len(args) > 1:
         path_plain = args[1]
     else:

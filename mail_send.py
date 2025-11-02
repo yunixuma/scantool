@@ -83,6 +83,9 @@ def build_message(template, row):
 
         # Embed image if available
         if image_b64 and image_cid and image_data:
+            print(image_b64)
+            print(image_cid)
+            print(image_data)
             msg.add_related(image_data, 'image', 'png', cid=f'<{image_cid}>')
 
         msg.add_alternative(body, subtype='html')
