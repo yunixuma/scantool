@@ -1,0 +1,17 @@
+target_sector: 2
+auth_key_a: "A1B2C3D4E5F6"
+auth_key_b: "F6E5D4C3B2A1"
+lock_other_sectors:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
